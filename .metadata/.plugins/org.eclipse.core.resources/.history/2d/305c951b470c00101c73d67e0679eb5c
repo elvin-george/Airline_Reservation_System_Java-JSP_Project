@@ -1,0 +1,97 @@
+<%@ page import="java.sql.*" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Flights</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #BCEDFF; padding: 20px; color: #0E4A7B; }
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
+        h2 { text-align: center; color: #015C92; }
+        .filter-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        select, input, button {
+            padding: 10px; border-radius: 5px; border: 1px solid #2D82B5; font-size: 16px;
+        }
+        button { background: #007bff; color: white; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background: #007bff; color: white; }
+        .action-links a { text-decoration: none; padding: 5px 10px; color: white; border-radius: 5px; }
+        .edit { background: #28a745; }
+        .delete { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Manage Flights</h2>
+        <div class="filter-bar">
+            <select id="source">
+                <option value="">Source</option>
+                <% Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/airline", "root", "root");
+                   Statement stmt = conn.createStatement();
+                   ResultSet rs = stmt.executeQuery("SELECT DISTINCT source FROM flights");
+                   while (rs.next()) { %>
+                       <option value="<%= rs.getString("source") %>"><%= rs.getString("source") %></option>
+                <% } rs.close(); %>
+            </select>
+            <select id="destination">
+                <option value="">Destination</option>
+                <% rs = stmt.executeQuery("SELECT DISTINCT destination FROM flights");
+                   while (rs.next()) { %>
+                       <option value="<%= rs.getString("destination") %>"><%= rs.getString("destination") %></option>
+                <% } rs.close(); conn.close(); %>
+            </select>
+            <input type="date" id="date">
+            <button onclick="searchFlights()">Search</button>
+        </div>
+        <a href="add_flight.jsp">Add Flight</a>
+        <a href="schedule_flight.jsp">Schedule Flight</a>
+        <table>
+            <tr>
+                <th>Flight ID</th>
+                <th>Flight Number</th>
+                <th>Airline Name</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Departure Time</th>
+                <th>Arrival Time</th>
+                <th>Total Seats</th>
+                <th>Available Seats</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+            <% conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/airline", "root", "root");
+               stmt = conn.createStatement();
+               rs = stmt.executeQuery("SELECT * FROM flights");
+               while (rs.next()) { %>
+            <tr>
+                <td><%= rs.getInt("flight_id") %></td>
+                <td><%= rs.getString("flightnumber") %></td>
+                <td><%= rs.getString("airline_name") %></td>
+                <td><%= rs.getString("source") %></td>
+                <td><%= rs.getString("destination") %></td>
+                <td><%= rs.getString("departure_time") %></td>
+                <td><%= rs.getString("arrival_time") %></td>
+                <td><%= rs.getInt("total_seats") %></td>
+                <td><%= rs.getInt("available_seats") %></td>
+                <td><%= rs.getDouble("price") %></td>
+                <td class="action-links">
+                    <a href="edit_flight.jsp?flight_id=<%= rs.getInt("flight_id") %>" class="edit">Edit</a>
+                    <a href="delete_flight.jsp?flight_id=<%= rs.getInt("flight_id") %>" class="delete">Delete</a>
+                </td>
+            </tr>
+            <% } rs.close(); stmt.close(); conn.close(); %>
+        </table>
+    </div>
+    <script>
+        function searchFlights() {
+            var source = document.getElementById("source").value;
+            var destination = document.getElementById("destination").value;
+            var date = document.getElementById("date").value;
+            window.location.href = "manage_flights.jsp?source=" + source + "&destination=" + destination + "&date=" + date;
+        }
+    </script>
+</body>
+</html>

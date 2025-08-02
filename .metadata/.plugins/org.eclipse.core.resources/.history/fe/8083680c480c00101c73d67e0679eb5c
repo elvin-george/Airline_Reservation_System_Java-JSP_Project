@@ -1,0 +1,112 @@
+<%@ page import="java.sql.*" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Flights</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; padding: 20px; background: #BCEDFF; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { padding: 10px; border: 1px solid #ddd; }
+        th { background: #007bff; color: white; }
+        .btn { text-decoration: none; padding: 10px 15px; color: white; border-radius: 5px; display: inline-block; }
+        .btn-add { background: #28a745; }
+        .btn-schedule { background: #17a2b8; }
+        .btn:hover { opacity: 0.8; }
+        .filter-container { margin-bottom: 20px; text-align: center; }
+        select, input, button { padding: 8px; margin: 5px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h2>Manage Flights</h2>
+    <div class="filter-container">
+        <form method="GET" action="manage_flights.jsp">
+            <select name="source">
+                <option value="">Source</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi</option>
+            </select>
+            <select name="destination">
+                <option value="">Destination</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi</option>
+            </select>
+            <input type="date" name="date">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <a href="add_flight.jsp" class="btn btn-add">Add Flight</a>
+    <a href="schedule_flight.jsp" class="btn btn-schedule">Schedule Flight</a>
+    <table>
+        <tr>
+            <th>Flight ID</th>
+            <th>Flight Number</th>
+            <th>Airline Name</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th>Departure Time</th>
+            <th>Arrival Time</th>
+            <th>Total Seats</th>
+            <th>Available Seats</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+        <%
+            Connection conn = null;
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/airline", "root", "root");
+                
+                String source = request.getParameter("source");
+                String destination = request.getParameter("destination");
+                String date = request.getParameter("date");
+                
+                String query = "SELECT * FROM flights WHERE 1=1";
+                if (source != null && !source.isEmpty()) query += " AND source=?";
+                if (destination != null && !destination.isEmpty()) query += " AND destination=?";
+                if (date != null && !date.isEmpty()) query += " AND DATE(departure_time)=?";
+                
+                pstmt = conn.prepareStatement(query);
+                int paramIndex = 1;
+                if (source != null && !source.isEmpty()) pstmt.setString(paramIndex++, source);
+                if (destination != null && !destination.isEmpty()) pstmt.setString(paramIndex++, destination);
+                if (date != null && !date.isEmpty()) pstmt.setString(paramIndex++, date);
+                
+                rs = pstmt.executeQuery();
+                
+                while (rs.next()) {
+        %>
+        <tr>
+            <td><%= rs.getInt("flight_id") %></td>
+            <td><%= rs.getString("flightnumber") %></td>
+            <td><%= rs.getString("airline_name") %></td>
+            <td><%= rs.getString("source") %></td>
+            <td><%= rs.getString("destination") %></td>
+            <td><%= rs.getString("departure_time") %></td>
+            <td><%= rs.getString("arrival_time") %></td>
+            <td><%= rs.getInt("total_seats") %></td>
+            <td><%= rs.getInt("available_seats") %></td>
+            <td><%= rs.getDouble("price") %></td>
+            <td>
+                <a href="edit_flight.jsp?flight_id=<%= rs.getInt("flight_id") %>" class="btn btn-edit">Edit</a>
+                <a href="delete_flight.jsp?flight_id=<%= rs.getInt("flight_id") %>" class="btn btn-delete">Delete</a>
+            </td>
+        </tr>
+        <%
+                }
+            } catch (Exception e) {
+                out.println("<p>Error: " + e.getMessage() + "</p>");
+            } finally {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            }
+        %>
+    </table>
+</body>
+</html>

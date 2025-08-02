@@ -1,0 +1,162 @@
+<%@ page import="java.sql.*" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Users | Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            text-align: center;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        .btn {
+            padding: 5px 10px;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+        }
+        .edit { background: #28a745; }
+        .delete { background: #dc3545; }
+            <style>
+* { 
+    margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; 
+}
+
+body { 
+    background: #BCEDFF; /* Light Blue Background */
+    padding: 20px;
+    color: #0E4A7B; /* Deep Blue Text for contrast */
+}
+
+/* Navbar Styling */
+.navbar {
+    background: #2D82B5; /* Lighter Blue */
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    margin-right: 15px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+}
+
+.navbar a:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.logout-btn {
+    background: #B90E0A; /* Lighter Blue */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.logout-btn:hover { 
+    background: #990F02; /* Darker Blue */
+}
+
+/* Container */
+.container {
+    margin-top: 20px;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h1 {
+    color: #015C92; /* Deep Blue */
+    font-size: 28px;
+}
+
+p {
+    font-size: 18px;
+    color: #2D6B25; /* Dark Green Accent */
+}
+
+    </style>
+   
+</head>
+<body>
+
+<h2>Manage Users</h2>
+
+<table>
+    <tr>
+        <th>User ID</th>
+        <th>First Name</th>
+        <th>Middle Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>User Type</th>
+        <th>Actions</th>
+    </tr>
+
+    <%
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/airline", "root", "root");
+
+            String sql = "SELECT user_id, first_name, middle_name, last_name, email, user_type FROM user";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+    %>
+    <tr>
+        <td><%= rs.getInt("user_id") %></td>
+        <td><%= rs.getString("first_name") %></td>
+        <td><%= rs.getString("middle_name") %></td>
+        <td><%= rs.getString("last_name") %></td>
+        <td><%= rs.getString("email") %></td>
+        <td><%= rs.getString("user_type") %></td>
+        <td>
+            <a href="edit_user.jsp?user_id=<%= rs.getInt("user_id") %>" class="btn edit">Edit</a>
+            <a href="delete_user.jsp?user_id=<%= rs.getInt("user_id") %>" class="btn delete" onclick="return confirm('Are you sure?')">Delete</a>
+        </td>
+    </tr>
+    <%
+            }
+        } catch (Exception e) {
+            out.println("<p style='color:red;'>Error: " + e.getMessage() + "</p>");
+        } finally {
+            try { if (rs != null) rs.close(); if (stmt != null) stmt.close(); if (conn != null) conn.close(); } catch (SQLException ignored) {}
+        }
+    %>
+</table>
+
+</body>
+</html>
